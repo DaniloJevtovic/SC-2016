@@ -169,7 +169,6 @@ while (1):
                         if (el['pass']):
                             sum += answer
 
-
             cv2.circle(img, el['center'], 16, c, 2)
 
             id = el['id']
@@ -189,16 +188,20 @@ while (1):
 
     def prepoznavanje(el):
         img = cv2.imread('frames/frame-{}.png'.format(el['history'][0]['t']))  # citam frejmove
+        # (h, w, c) = img.shape
 
-        block_size = (28, 28)
+        blok_size = (28, 28)
         blok_center = (int(el['history'][0]['center'][0]),
                         int(el['history'][0]['center'][1]))  # centar bloka = centar broja
         # print (block_center)
-        blok_loc = (blok_center[1] - block_size[0] / 2, blok_center[0] - block_size[1] / 2)
+        blok_loc = (blok_center[1] - blok_size[0] / 2, blok_center[0] - blok_size[1] / 2)
 
-        imgB = img[blok_loc[0]:blok_loc[0] + block_size[0], blok_loc[1]:blok_loc[1] + block_size[1], 0]
+        imgB = img[blok_loc[0]:blok_loc[0] + blok_size[0], blok_loc[1]:blok_loc[1] + blok_size[1], 0]
 
-        cv2.imwrite('images/' + str(el['id']) + '.png', imgB)
+        #cv2.imwrite('images/' + str(el['id']) + '.png', imgB)
+        cv2.imwrite('images2/' + str(el['id']) + '.png', imgB)
+
+
 
         imgB = imgB.reshape(1, 1, 28, 28).astype('float32')
 
@@ -223,7 +226,8 @@ while (1):
         blok_size = (28, 28)
         blok_center = (int(el['history'][0]['center'][0]),
                         int(el['history'][0]['center'][1]))
-        blok_loc = (blok_center[0] - blok_size[0] / 2, blok_center[1] - blok_size[1] / 2)
+
+        blok_loc = (blok_center[1] - blok_size[0] / 2, blok_center[0] - blok_size[1] / 2)
 
         imgB = img[blok_loc[0]:blok_loc[0] + blok_size[0],
                blok_loc[1]:blok_loc[1] + blok_size[1], 0]

@@ -9,7 +9,7 @@ data   = mnist.data / 255.0
 labels = mnist.target.astype('int')
 
 train_rank = 5000
-test_rank = 100
+test_rank = 1000
 
 #------- MNIST subset --------------------------
 train_subset = np.random.choice(data.shape[0], train_rank)
@@ -61,7 +61,7 @@ model.compile(loss='mean_squared_error', optimizer=sgd)
 
 #Obučavanje na osnovu train skupa
 # training
-training = model.fit(train_data, train_out, nb_epoch=500, batch_size=400, verbose=0)
+training = model.fit(train_data, train_out, nb_epoch=1000, batch_size=400, verbose=0)
 print training.history['loss'][-1]
 
 #Verifikacija na test skupu.

@@ -11,7 +11,7 @@ lines = cv2.HoughLinesP(image=edges,rho=1,theta=np.pi/180, threshold=100,lines=n
 a,b,c = lines.shape
 for i in range(a):
     cv2.line(gray, (lines[i][0][0], lines[i][0][1]), (lines[i][0][2], lines[i][0][3]), (0, 0, 255), 3, cv2.LINE_AA)
-    #cv2.imwrite('houghlines5.jpg',gray)
+    cv2.imwrite('houghlines5.jpg',gray)
 
 line = [(lines[0][0][0], lines[0][0][1]), (lines[0][0][2], lines[0][0][3])]
 
