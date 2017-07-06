@@ -11,6 +11,27 @@ from keras import backend as K
 from keras.models import model_from_json
 K.set_image_dim_ordering('th')
 
+"""
+json_file = open('model_123.json', 'r')
+loaded_model_json = json_file.read()
+json_file.close()
+model = model_from_json(loaded_model_json)
+# load weights into new model
+model.load_weights("model_123.h5")
+"""
+
+"""
+# load simple model
+json_file = open('simple_model.json', 'r')
+loaded_model_json = json_file.read()
+json_file.close()
+model = model_from_json(loaded_model_json)
+# load weights into new model
+model.load_weights("simple_model.h5")
+"""
+
+#"""
+# load laaarge model
 # load json and create model - UCITAVAM MODEL KAKO NE BI NA POCETKU TRENIRAO NN
 json_file = open('model.json', 'r')
 loaded_model_json = json_file.read()
@@ -18,6 +39,7 @@ json_file.close()
 model = model_from_json(loaded_model_json)
 # load weights into new model
 model.load_weights("model.h5")
+#"""
 
 cap = cv2.VideoCapture("videos/video-3.avi")
 flag, img = cap.read()
@@ -26,20 +48,20 @@ succes, frame = cap.read()
 if succes:
     cv2.imwrite('linija.png', frame)
 
+#https://stackoverflow.com/questions/39752235/python-how-to-detect-vertical-and-horizontal-lines-in-an-image-with-houghlines-w
 #hough transformacija za pronalazanje linije
 gray = cv2.imread('linija.png')
 edges = cv2.Canny(gray,50,150,apertureSize = 3)
 #cv2.imwrite('edges-50-150.jpg',edges)
 minLineLength=200
-lines = cv2.HoughLinesP(image=edges,rho=1,theta=np.pi/180,
-                        threshold=100,lines=np.array([]), minLineLength=minLineLength,maxLineGap=20)
+lines = cv2.HoughLinesP(image=edges,rho=1,theta=np.pi/180, threshold=100,lines=np.array([]), minLineLength=minLineLength,maxLineGap=20)
 
 a,b,c = lines.shape
 for i in range(a):
     cv2.line(gray, (lines[i][0][0], lines[i][0][1]), (lines[i][0][2], lines[i][0][3]), (0, 0, 255), 3, cv2.LINE_AA)
+    # cv2.imwrite('houghlines5.jpg',gray)
 
 line = [(lines[0][0][0], lines[0][0][1]), (lines[0][0][2], lines[0][0][3])]
-
 print 'Koordinate linije: ' + str(line)
 
 #line = [(48,398), (447,98)] #rucno pronadjeno koje su koordinate linije, napisi funkciju
@@ -76,7 +98,7 @@ elements = []
 t =0
 counter = 0
 times = []
-suma = 0
+sum = 0
 answer = '' #
 
 while (1):
@@ -140,34 +162,12 @@ while (1):
                         el['pass'] = True
                         counter += 1
 
-                        img = cv2.imread('frames/frame-{}.png'.format(el['history'][0]['t']))   #citam frejmove
-
-                        blok_size = (28, 28)
-                        blok_center = (int(el['history'][0]['center'][0]),
-                                       int(el['history'][0]['center'][1]))  # centar bloka = centar broja
-                        # print (blok_center)
-                        blok_loc = (blok_center[1] - blok_size[0] / 2, blok_center[0] - blok_size[1] / 2)
-                        imgB = img[blok_loc[0]:blok_loc[0] + blok_size[0], blok_loc[1]:blok_loc[1] + blok_size[1], 0]
-
-                        cv2.imwrite('images/' + str(el['id']) + '.png', imgB)
-
-                        imgB = imgB.reshape(1, 1, 28, 28).astype('float32')
-
-                        # normalize inputs from 0-255 to 0-1
-                        imgB = imgB / 255
-
-                        imgB_test = imgB.reshape(784)
-                        # print imgB_test
-                        imgB_test = imgB_test / 255.
-                        # print imgB_test.shape
-                        tt = model.predict(imgB, verbose=1)
-                        #print tt
-                        result = 0
-                        answer = np.argmax(tt)
-                        #print answer
+                        #pozivam funkciju za prepoznavanje
+                        answer = prepoznavanje(el)
+                        #answer = prepoznavanje2(el)
 
                         if (el['pass']):
-                            suma += answer
+                            sum += answer
 
 
             cv2.circle(img, el['center'], 16, c, 2)
@@ -186,11 +186,68 @@ while (1):
                 if (ttt < 100):
                     cv2.circle(img, (fu[1], fu[2]), 1, (255, 255, 0), 1)
 
+
+    def prepoznavanje(el):
+        img = cv2.imread('frames/frame-{}.png'.format(el['history'][0]['t']))  # citam frejmove
+
+        block_size = (28, 28)
+        blok_center = (int(el['history'][0]['center'][0]),
+                        int(el['history'][0]['center'][1]))  # centar bloka = centar broja
+        # print (block_center)
+        blok_loc = (blok_center[1] - block_size[0] / 2, blok_center[0] - block_size[1] / 2)
+
+        imgB = img[blok_loc[0]:blok_loc[0] + block_size[0], blok_loc[1]:blok_loc[1] + block_size[1], 0]
+
+        cv2.imwrite('images/' + str(el['id']) + '.png', imgB)
+
+        imgB = imgB.reshape(1, 1, 28, 28).astype('float32')
+
+        # normalize inputs from 0-255 to 0-1
+        imgB = imgB / 255
+
+        imgB_test = imgB.reshape(784)
+        # print imgB_test
+        imgB_test = imgB_test / 255.
+        # print imgB_test.shape
+        tt = model.predict(imgB, verbose=1)
+        # print tt
+        result = 0
+        answer = np.argmax(tt)
+        # print answer
+        return answer
+
+    def prepoznavanje2(el):
+        img = cv2.imread('frames/frame-{}.png'.format(el['history'][0]['t']))  # citam frejmove
+        #(h, w, c) = img.shape
+
+        blok_size = (28, 28)
+        blok_center = (int(el['history'][0]['center'][0]),
+                        int(el['history'][0]['center'][1]))
+        blok_loc = (blok_center[0] - blok_size[0] / 2, blok_center[1] - blok_size[1] / 2)
+
+        imgB = img[blok_loc[0]:blok_loc[0] + blok_size[0],
+               blok_loc[1]:blok_loc[1] + blok_size[1], 0]
+
+        cv2.imwrite('images2/' + str(el['id']) + '.png', imgB)
+
+        #plt.imshow(imgB, cmap="Greys")
+        (h, w) = imgB.shape
+
+        imgB_test = imgB.reshape(784)
+        print imgB_test
+
+        imgB_test = imgB_test / 255.
+        print imgB_test.shape
+        tt = model.predict(np.array([imgB_test]), verbose=1)
+        #print tt[0]
+
+        return np.argmax(tt[0])
+
     elapsed_time = time.time() - start_time
     times.append(elapsed_time * 1000)
     cv2.putText(img, 'Proslo: ' + str(counter), (460, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (180, 100, 50), 2)
     cv2.putText(img, 'Broj: ' + str(answer), (460, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-    cv2.putText(img, 'Suma: ' + str(suma), (460, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.putText(img, 'Suma: ' + str(sum), (460, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     # print nr_objects
     t += 1
@@ -210,5 +267,4 @@ et = np.array(times)
 print 'mean %.2f ms' % (np.mean(et))
 # print np.std(et)
 
-print ('Suma = ' + str(suma))
-
+print ('Suma = ' + str(sum))
