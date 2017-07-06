@@ -58,8 +58,8 @@ print("Baseline Error: %.2f%%" % (100-scores[1]*100))
 
 #save the model
 model_json = model.to_json()
-with open("model.json", "w") as json_file:
+with open("large_model.json", "w") as json_file:
     json_file.write(model_json)
 # serialize weights to HDF5
-model.save_weights("model.h5")
+model.save_weights("large_model.h5")
 print("Saved model to disk")
